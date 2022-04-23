@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from '../../entities/user.entity';
 import { CreateUsersDto, UpdateUsersDto } from '../../dtos/users.dto';
 
@@ -25,6 +29,11 @@ export class UsersService {
     };
   }
   createUser(payload: CreateUsersDto) {
+    const user = this.users.find((item) => item.email === payload.email);
+    if (user) {
+      throw new NotAcceptableException(`${payload.email} already used`);
+    }
+
     const id = this.countId + 1;
     this.countId = id;
     this.users.push({ id: id.toString(), ...payload });
