@@ -4,11 +4,12 @@ import {
   NotAcceptableException,
 } from '@nestjs/common';
 import { Product } from 'src/entities/product.entity';
+import { UpdateProductDto } from '../../dtos/products.dto';
 
 @Injectable()
 export class ProductsService {
   private products: Product[] = [];
-  private counterId: number = 0;
+  private counterId = 0;
 
   findAll() {
     return this.products;
@@ -29,11 +30,10 @@ export class ProductsService {
     this.products.push(newProduct);
     return newProduct;
   }
-  update(id: string, payload: any) {
-    this.counterId = this.counterId + 1;
+  update(id: string, payload: UpdateProductDto) {
     const product = this.findOne(id);
 
-    if (product && (payload.id === id || payload.id === undefined)) {
+    if (product) {
       ///update with database actions
       const index = this.products.findIndex((item) => item.id === id);
       this.products[index] = { ...this.products[index], ...payload };
