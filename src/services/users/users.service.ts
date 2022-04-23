@@ -7,26 +7,44 @@ export class UsersService {
   private users: User[] = [];
   private countId = 0;
   findAll() {
-    return this.users;
+    return this.users.map((user) => ({
+      name: user.name,
+      email: user.email,
+      id: user.id,
+    }));
   }
   findOne(id: string) {
     const user = this.users.find((item) => item.id === id);
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    return user;
+    return {
+      name: user.name,
+      email: user.email,
+      id: user.id,
+    };
   }
   createUser(payload: CreateUsersDto) {
     const id = this.countId + 1;
     this.countId = id;
-    return this.users.push({ id: id.toString(), ...payload });
+    this.users.push({ id: id.toString(), ...payload });
+    return {
+      name: payload.name,
+      email: payload.email,
+      id: id.toString(),
+    };
   }
   updateUser(id: string, payload: UpdateUsersDto) {
     const index = this.users.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    return (this.users[index] = { ...this.users[index], ...payload });
+    this.users[index] = { ...this.users[index], ...payload };
+    return {
+      name: this.users[index].name,
+      email: this.users[index].email,
+      id: this.users[index].id,
+    };
   }
   removeUser(id: string) {
     const index = this.users.findIndex((item) => item.id === id);
