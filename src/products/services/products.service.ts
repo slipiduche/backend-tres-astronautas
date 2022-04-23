@@ -3,8 +3,8 @@ import {
   NotFoundException,
   NotAcceptableException,
 } from '@nestjs/common';
-import { Product } from 'src/entities/product.entity';
-import { UpdateProductDto } from '../../dtos/products.dto';
+import { Product } from 'src/products/entities/product.entity';
+import { UpdateProductDto } from '../dtos/products.dto';
 
 @Injectable()
 export class ProductsService {

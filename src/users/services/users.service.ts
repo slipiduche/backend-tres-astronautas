@@ -3,8 +3,8 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../../entities/user.entity';
-import { CreateUsersDto, UpdateUsersDto } from '../../dtos/users.dto';
+import { User } from '../entities/user.entity';
+import { CreateUsersDto, UpdateUsersDto } from '../dtos/users.dto';
 
 @Injectable()
 export class UsersService {

@@ -1,5 +1,5 @@
-import { ProductsService } from '../../services/products/products.service';
-import { UpdateProductDto, CreateProductDto } from '../../dtos/products.dto';
+import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
+import { ProductsService } from '../services/products.service';
 import {
   Body,
   Controller,
