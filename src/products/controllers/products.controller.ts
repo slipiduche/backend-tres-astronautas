@@ -10,10 +10,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../services/products.service';
+@ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
+  @ApiOperation({ summary: 'List of products' })
   @Get()
   getProducts() {
     return this.productsService.findAll();

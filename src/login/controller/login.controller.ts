@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('login')
 @Controller('login')
 export class LoginController {
   @Get()
