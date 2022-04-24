@@ -1,5 +1,4 @@
 import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
-import { ProductsService } from '../services/products.service';
 import {
   Body,
   Controller,
@@ -11,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ProductsService } from '../services/products.service';
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}

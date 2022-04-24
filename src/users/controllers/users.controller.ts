@@ -23,8 +23,8 @@ export class UsersController {
   }
   @Post()
   createUser(@Body() payload: CreateUsersDto) {
-    const { name, email, password } = payload;
-    return this.usersService.createUser(payload);
+    const resp = this.usersService.createUser(payload);
+    return { message: 'user created', user: resp };
   }
   @Put(':userId')
   updateUser(@Param('userId') userId: string, @Body() payload: UpdateUsersDto) {

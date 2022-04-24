@@ -1,11 +1,12 @@
-import { IsString, IsNotEmpty } from 'class-validator';
-import { PartialType } from '@nestjs/mapped-types';
+import { IsString, IsNotEmpty, IsEmail } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
 export class CreateUsersDto {
   @IsString()
   @IsNotEmpty()
   name: string;
   @IsString()
   @IsNotEmpty()
+  @IsEmail()
   email: string;
   @IsString()
   @IsNotEmpty()

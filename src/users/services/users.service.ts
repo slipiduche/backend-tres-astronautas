@@ -22,11 +22,12 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    return {
+    const userWoP: User = {
       name: user.name,
       email: user.email,
       id: user.id,
     };
+    return userWoP;
   }
   createUser(payload: CreateUsersDto) {
     const user = this.users.find((item) => item.email === payload.email);

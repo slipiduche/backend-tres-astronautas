@@ -4,7 +4,7 @@ import {
   NotAcceptableException,
 } from '@nestjs/common';
 import { Product } from 'src/products/entities/product.entity';
-import { UpdateProductDto } from '../dtos/products.dto';
+import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -21,7 +21,7 @@ export class ProductsService {
     }
     return product;
   }
-  create(payload: any) {
+  create(payload: CreateProductDto) {
     this.counterId = this.counterId + 1;
     const newProduct = {
       id: this.counterId.toString(),
