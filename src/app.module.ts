@@ -6,7 +6,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
-import { LoginModule } from './login/login.module';
 import { DatabaseModule } from './database/database.module';
 import { enviroments } from './enviroments';
 import { AuthModule } from './auth/auth.module';
@@ -31,7 +30,7 @@ import config from './config';
     }),
     UsersModule,
     ProductsModule,
-    LoginModule,
+    AuthModule,
     DatabaseModule,
     AuthModule,
   ],

@@ -16,23 +16,18 @@ export class UsersService {
   async findAll() {
     const users = await this.getAllUsers();
 
-    return users.map((user) => ({
-      name: user.name,
-      email: user.email,
-      id: user._id,
-    }));
+    return users.map((user) => {
+      const { password, ...rta } = user.toJSON();
+      return rta;
+    });
   }
   async findOne(id: string) {
     const user = await this.getUser(id);
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    const userWoP = {
-      name: user.name,
-      email: user.email,
-      id: user._id,
-    };
-    return userWoP;
+    const { password, ...rta } = user.toJSON();
+    return rta;
   }
   async createUser(payload: CreateUsersDto) {
     //const exist = await this.userModel.where('email === payload.email');
@@ -72,5 +67,8 @@ export class UsersService {
       throw new NotFoundException(`User #${id} not found`);
     }
     return user;
+  }
+  async findByEmail(email: string) {
+    return await this.userModel.findOne({ email }).exec();
   }
 }

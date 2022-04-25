@@ -17,28 +17,28 @@ import { MongoIdPipe } from '../../common/mongoid.pipe';
 export class UsersController {
   constructor(private usersService: UsersService) {}
   @Get()
-  getUsers() {
-    return this.usersService.findAll();
+  async getUsers() {
+    return await this.usersService.findAll();
   }
   @Get(':userId')
-  getUser(@Param('userId', MongoIdPipe) userId: string) {
-    return this.usersService.findOne(userId);
+  async getUser(@Param('userId', MongoIdPipe) userId: string) {
+    return await this.usersService.findOne(userId);
   }
   @Post()
-  createUser(@Body() payload: CreateUsersDto) {
-    const resp = this.usersService.createUser(payload);
+  async createUser(@Body() payload: CreateUsersDto) {
+    const resp = await this.usersService.createUser(payload);
     return { message: 'user created', user: resp };
   }
   @Put(':userId')
-  updateUser(
+  async updateUser(
     @Param('userId', MongoIdPipe) userId: string,
     @Body() payload: UpdateUsersDto,
   ) {
     const { name, email, password } = payload;
-    return this.usersService.updateUser(userId, payload);
+    return await this.usersService.updateUser(userId, payload);
   }
   @Delete(':userId')
-  deleteUser(@Param('userId', MongoIdPipe) userId: string) {
-    return this.usersService.removeUser(userId);
+  async deleteUser(@Param('userId', MongoIdPipe) userId: string) {
+    return await this.usersService.removeUser(userId);
   }
 }
