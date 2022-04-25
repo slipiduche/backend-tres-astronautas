@@ -31,9 +31,11 @@ export class UsersService {
   }
   async createUser(payload: CreateUsersDto) {
     //const exist = await this.userModel.where('email === payload.email');
+
     const hashPassword = await bcrypt.hash(payload.password, 10);
-    const newUser = await new this.userModel(payload);
+    const newUser = await new this.userModel({ ...payload, role: 'user' });
     newUser.password = hashPassword;
+
     await newUser.save();
     console.log(newUser);
     if (!newUser) {

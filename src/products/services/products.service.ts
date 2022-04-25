@@ -5,7 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PayloadToken } from 'src/auth/models/token.model';
 import { Product } from 'src/products/entities/product.entity';
+import { User } from 'src/users/entities/user.entity';
 import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
 
 @Injectable()
@@ -14,6 +16,9 @@ export class ProductsService {
     @InjectModel(Product.name) private productModel: Model<Product>,
   ) {}
   async findAll() {
+    return this.productModel.find().populate('owner').exec();
+  }
+  async findAllByUser(id: string) {
     return this.productModel.find().populate('owner').exec();
   }
   async findOne(id: string) {
@@ -33,18 +38,24 @@ export class ProductsService {
     console.log(newProduct);
     return newProduct;
   }
-  async update(id: string, payload: UpdateProductDto) {
+  async update(id: string, payload: UpdateProductDto, userId: string) {
     const product = await this.productModel
       .findByIdAndUpdate(id, { $set: payload }, { new: true })
       .exec();
-    await product.save();
-    if (!product) {
+
+    if (!product || !userId == product.toJSON().owner._id) {
       throw new NotAcceptableException(`Unauthorized`);
     }
+
+    await product.save();
     return product;
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
+    const product = await this.findOne(id);
+    if (!product || !userId == product.toJSON().owner._id) {
+      throw new NotAcceptableException(`Unauthorized`);
+    }
     return await this.productModel.findByIdAndDelete(id);
   }
 }

@@ -9,20 +9,31 @@ import {
   Put,
   HttpCode,
   HttpStatus,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { MongoIdPipe } from '../../common/mongoid.pipe';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../services/products.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { PayloadToken } from 'src/auth/models/token.model';
+import { Types } from 'mongoose';
+
+@UseGuards(JwtAuthGuard)
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
   @ApiOperation({ summary: 'List of products' })
   @Get()
+  @Public()
   async getProducts() {
     return await this.productsService.findAll();
   }
   @Get(':productId')
+  @Public()
   @HttpCode(HttpStatus.ACCEPTED)
   async getProduct(@Param('productId', MongoIdPipe) productId: string) {
     const res = await this.productsService.findOne(productId);
@@ -32,8 +43,13 @@ export class ProductsController {
     return { message: 'not founded' };
   }
   @Post()
-  async createProduct(@Body() payload: CreateProductDto) {
-    const resp = await this.productsService.create(payload);
+  async createProduct(@Req() req: Request, @Body() payload: CreateProductDto) {
+    const user = req.user as PayloadToken;
+    const owner = new Types.ObjectId(user.sub);
+    const resp = await this.productsService.create({
+      ...payload,
+      owner,
+    });
     return {
       message: 'product created',
       product: resp,
@@ -41,10 +57,12 @@ export class ProductsController {
   }
   @Put(':productId')
   async updateProduct(
+    @Req() req: Request,
     @Param('productId', MongoIdPipe) productId: string,
     @Body() payload: UpdateProductDto,
   ) {
-    const res = await this.productsService.update(productId, payload);
+    const user = req.user as PayloadToken;
+    const res = await this.productsService.update(productId, payload, user.sub);
     if (res) {
       return {
         message: `Product ${productId} updated`,
@@ -56,7 +74,12 @@ export class ProductsController {
     };
   }
   @Delete(':productId')
-  async deleteProduct(@Param('productId', MongoIdPipe) productId: string) {
-    return await this.productsService.remove(productId);
+  async deleteProduct(
+    @Req() req: Request,
+    @Param('productId', MongoIdPipe) productId: string,
+  ) {
+    const user = req.user as PayloadToken;
+
+    return await this.productsService.remove(productId, user.sub);
   }
 }

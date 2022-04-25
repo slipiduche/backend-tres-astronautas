@@ -1,5 +1,12 @@
-import { IsString, IsNumber, IsNotEmpty, IsPositive, IsMongoId } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsPositive,
+  IsMongoId,
+} from 'class-validator';
 import { PartialType } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -9,9 +16,6 @@ export class CreateProductDto {
   @IsPositive()
   @IsNumber()
   readonly price: number;
-  @IsNotEmpty()
-  @IsString()
-  @IsMongoId()
-  readonly owner: string;
+  readonly owner: Types.ObjectId;
 }
 export class UpdateProductDto extends PartialType(CreateProductDto) {}

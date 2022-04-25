@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 
 import config from './../../config';
 
-import { IS_PUBLIC_KEY } from '../decorators/public.decorators';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 import { Request } from 'express';
 
