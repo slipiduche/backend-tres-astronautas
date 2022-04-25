@@ -4,9 +4,10 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../entities/user.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
+import { User } from '../entities/user.entity';
 import { CreateUsersDto, UpdateUsersDto } from '../dtos/users.dto';
 
 @Injectable()
@@ -35,17 +36,16 @@ export class UsersService {
   }
   async createUser(payload: CreateUsersDto) {
     //const exist = await this.userModel.where('email === payload.email');
+    const hashPassword = await bcrypt.hash(payload.password, 10);
+    payload.password = hashPassword;
     const newUser = await new this.userModel(payload);
     await newUser.save();
     console.log(newUser);
     if (!newUser) {
       throw new Error('Not created');
     }
-    return {
-      name: newUser.name,
-      email: newUser.email,
-      id: newUser._id,
-    };
+    const { password, ...rta } = newUser.toJSON();
+    return rta;
   }
   async updateUser(id: string, payload: UpdateUsersDto) {
     const user = await this.userModel
