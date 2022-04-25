@@ -3,53 +3,48 @@ import {
   NotFoundException,
   NotAcceptableException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Product } from 'src/products/entities/product.entity';
 import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
 
 @Injectable()
 export class ProductsService {
-  private products: Product[] = [];
-  private counterId = 0;
-
-  findAll() {
-    return this.products;
+  constructor(
+    @InjectModel(Product.name) private productModel: Model<Product>,
+  ) {}
+  async findAll() {
+    return this.productModel.find().populate('owner').exec();
   }
-  findOne(id: string) {
-    const product = this.products.find((item) => item.id === id);
+  async findOne(id: string) {
+    const product = await this.productModel
+      .findById(id)
+      .populate('owner')
+      .exec();
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }
     return product;
   }
-  create(payload: CreateProductDto) {
-    this.counterId = this.counterId + 1;
-    const newProduct = {
-      id: this.counterId.toString(),
-      ...payload,
-    };
-    this.products.push(newProduct);
+  async create(payload: CreateProductDto) {
+    console.log(payload);
+    const newProduct = await new this.productModel(payload);
+    await newProduct.save();
+    console.log(newProduct);
     return newProduct;
   }
-  update(id: string, payload: UpdateProductDto) {
-    const product = this.findOne(id);
-
-    if (product) {
-      ///update with database actions
-      const index = this.products.findIndex((item) => item.id === id);
-      this.products[index] = { ...this.products[index], ...payload };
-      return this.products[index];
+  async update(id: string, payload: UpdateProductDto) {
+    const product = await this.productModel
+      .findByIdAndUpdate(id, { $set: payload }, { new: true })
+      .exec();
+    await product.save();
+    if (!product) {
+      throw new NotAcceptableException(`Unauthorized`);
     }
-    throw new NotAcceptableException(`Unauthorized`);
+    return product;
   }
 
-  remove(id: string) {
-    const index = this.products.findIndex((item) => item.id === id);
-
-    if (index === -1) {
-      throw new NotFoundException(`Product #${id} not found`);
-    }
-
-    this.products.splice(index, 1);
-    return true;
+  async remove(id: string) {
+    return await this.productModel.findByIdAndDelete(id);
   }
 }

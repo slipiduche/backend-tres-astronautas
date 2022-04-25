@@ -9,7 +9,9 @@ import {
   Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
 import { UsersService } from 'src/users/services/users.service';
+import { MongoIdPipe } from '../../common/mongoid.pipe';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -19,7 +21,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
   @Get(':userId')
-  getUser(@Param('userId') userId: string) {
+  getUser(@Param('userId', MongoIdPipe) userId: string) {
     return this.usersService.findOne(userId);
   }
   @Post()
@@ -28,12 +30,15 @@ export class UsersController {
     return { message: 'user created', user: resp };
   }
   @Put(':userId')
-  updateUser(@Param('userId') userId: string, @Body() payload: UpdateUsersDto) {
+  updateUser(
+    @Param('userId', MongoIdPipe) userId: string,
+    @Body() payload: UpdateUsersDto,
+  ) {
     const { name, email, password } = payload;
     return this.usersService.updateUser(userId, payload);
   }
   @Delete(':userId')
-  deleteUser(@Param('userId') userId: string) {
+  deleteUser(@Param('userId', MongoIdPipe) userId: string) {
     return this.usersService.removeUser(userId);
   }
 }

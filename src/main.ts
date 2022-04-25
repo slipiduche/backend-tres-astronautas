@@ -9,6 +9,9 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       //  forbidNonWhitelisted: true  //if we want denegate request with more data
+      // transformOptions: {      //if we have pipes with troubles
+      //   enableImplicitConversion: true,
+      // },
     }),
   );
   const config = new DocumentBuilder()

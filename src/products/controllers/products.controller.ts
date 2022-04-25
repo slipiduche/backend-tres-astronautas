@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { MongoIdPipe } from '../../common/mongoid.pipe';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../services/products.service';
 @ApiTags('products')
@@ -18,32 +19,32 @@ export class ProductsController {
   constructor(private productsService: ProductsService) {}
   @ApiOperation({ summary: 'List of products' })
   @Get()
-  getProducts() {
-    return this.productsService.findAll();
+  async getProducts() {
+    return await this.productsService.findAll();
   }
   @Get(':productId')
   @HttpCode(HttpStatus.ACCEPTED)
-  getProduct(@Param('productId') productId: string) {
-    const res = this.productsService.findOne(productId);
+  async getProduct(@Param('productId', MongoIdPipe) productId: string) {
+    const res = await this.productsService.findOne(productId);
     if (res) {
       return res;
     }
     return { message: 'not founded' };
   }
   @Post()
-  createProduct(@Body() payload: CreateProductDto) {
-    const resp = this.productsService.create(payload);
+  async createProduct(@Body() payload: CreateProductDto) {
+    const resp = await this.productsService.create(payload);
     return {
       message: 'product created',
       product: resp,
     };
   }
   @Put(':productId')
-  updateProduct(
-    @Param('productId') productId: string,
+  async updateProduct(
+    @Param('productId', MongoIdPipe) productId: string,
     @Body() payload: UpdateProductDto,
   ) {
-    const res = this.productsService.update(productId, payload);
+    const res = await this.productsService.update(productId, payload);
     if (res) {
       return {
         message: `Product ${productId} updated`,
@@ -55,7 +56,7 @@ export class ProductsController {
     };
   }
   @Delete(':productId')
-  deleteProduct(@Param('productId') productId: string) {
-    return this.productsService.remove(productId);
+  async deleteProduct(@Param('productId', MongoIdPipe) productId: string) {
+    return await this.productsService.remove(productId);
   }
 }

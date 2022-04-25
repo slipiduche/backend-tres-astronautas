@@ -1,67 +1,76 @@
 import {
   Injectable,
+  Inject,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '../entities/user.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateUsersDto, UpdateUsersDto } from '../dtos/users.dto';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
-  private countId = 0;
-  findAll() {
-    return this.users.map((user) => ({
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  async findAll() {
+    const users = await this.getAllUsers();
+
+    return users.map((user) => ({
       name: user.name,
       email: user.email,
-      id: user.id,
+      id: user._id,
     }));
   }
-  findOne(id: string) {
-    const user = this.users.find((item) => item.id === id);
+  async findOne(id: string) {
+    const user = await this.getUser(id);
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    const userWoP: User = {
+    const userWoP = {
       name: user.name,
       email: user.email,
-      id: user.id,
+      id: user._id,
     };
     return userWoP;
   }
-  createUser(payload: CreateUsersDto) {
-    const user = this.users.find((item) => item.email === payload.email);
-    if (user) {
-      throw new NotAcceptableException(`${payload.email} already used`);
+  async createUser(payload: CreateUsersDto) {
+    //const exist = await this.userModel.where('email === payload.email');
+    const newUser = await new this.userModel(payload);
+    await newUser.save();
+    console.log(newUser);
+    if (!newUser) {
+      throw new Error('Not created');
     }
-
-    const id = this.countId + 1;
-    this.countId = id;
-    this.users.push({ id: id.toString(), ...payload });
     return {
-      name: payload.name,
-      email: payload.email,
-      id: id.toString(),
+      name: newUser.name,
+      email: newUser.email,
+      id: newUser._id,
     };
   }
-  updateUser(id: string, payload: UpdateUsersDto) {
-    const index = this.users.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`User #${id} not found`);
-    }
-    this.users[index] = { ...this.users[index], ...payload };
+  async updateUser(id: string, payload: UpdateUsersDto) {
+    const user = await this.userModel
+      .findByIdAndUpdate(id, { $set: payload }, { new: true })
+      .exec();
+    user.save();
     return {
-      name: this.users[index].name,
-      email: this.users[index].email,
-      id: this.users[index].id,
+      name: user.name,
+      email: user.email,
+      id: user._id,
     };
   }
-  removeUser(id: string) {
-    const index = this.users.findIndex((item) => item.id === id);
-    if (index === -1) {
+  async removeUser(id: string) {
+    return await this.userModel.findByIdAndDelete(id);
+  }
+  async getAllUsers() {
+    const users = await this.userModel.find().exec();
+    console.log(users);
+    return users;
+  }
+  async getUser(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    this.users.splice(index, 1);
-    return true;
+    return user;
   }
 }
