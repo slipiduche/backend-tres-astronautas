@@ -10,12 +10,11 @@ import { ProductsService } from 'src/products/services/products.service';
 import { Request } from 'express';
 import { OwnerService } from '../../services/owner/owner.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 @ApiTags('profile')
 @Controller('owner')
 export class OwnerController {
   constructor(private ownerService: OwnerService) {}
-  @Roles(Role.USER)
   @Get('my-products')
   getMyProducts(@Req() req: Request) {
     const user = req.user as PayloadToken;

@@ -19,7 +19,7 @@ import { ProductsService } from '../services/products.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { PayloadToken } from 'src/auth/models/token.model';
-import { Types } from 'mongoose';
+
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('products')
@@ -45,7 +45,7 @@ export class ProductsController {
   @Post()
   async createProduct(@Req() req: Request, @Body() payload: CreateProductDto) {
     const user = req.user as PayloadToken;
-    const owner = new Types.ObjectId(user.sub);
+    const owner = user.sub; //new Types.ObjectId(user.sub);
     const resp = await this.productsService.create({
       ...payload,
       owner,

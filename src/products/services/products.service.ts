@@ -4,10 +4,8 @@ import {
   NotAcceptableException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { PayloadToken } from 'src/auth/models/token.model';
+import { Model, Types } from 'mongoose';
 import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/users/entities/user.entity';
 import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
 
 @Injectable()
@@ -16,10 +14,24 @@ export class ProductsService {
     @InjectModel(Product.name) private productModel: Model<Product>,
   ) {}
   async findAll() {
-    return this.productModel.find().populate('owner').exec();
+    const all = await this.productModel.find().populate('owner').exec();
+    return all.map((product) => ({
+      ...product.toJSON(),
+      owner: { ...product.toJSON().owner, password: 'null' },
+    }));
   }
   async findAllByUser(id: string) {
-    return this.productModel.find().populate('owner').exec();
+    const allByUser = await this.productModel.find().populate('owner').exec();
+    if (!allByUser) {
+      throw new NotAcceptableException('Not valid');
+    }
+    if (allByUser.length > 0) {
+      return allByUser.map((product) => ({
+        ...product.toJSON(),
+        owner: id,
+      }));
+    }
+    return [];
   }
   async findOne(id: string) {
     const product = await this.productModel
@@ -29,31 +41,51 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }
-    return product;
+    return {
+      ...product.toJSON(),
+      owner: { ...product.toJSON().owner, password: 'null' },
+    };
   }
   async create(payload: CreateProductDto) {
     console.log(payload);
+    const owner = new Types.ObjectId(payload.owner);
+    const newProductObject = {
+      name: payload.name,
+      price: payload.price,
+      owner,
+    };
     const newProduct = await new this.productModel(payload);
     await newProduct.save();
     console.log(newProduct);
     return newProduct;
   }
   async update(id: string, payload: UpdateProductDto, userId: string) {
-    const product = await this.productModel
-      .findByIdAndUpdate(id, { $set: payload }, { new: true })
+    const product = await this.findOne(id);
+
+    if (!product) {
+      throw new NotFoundException(`Not found`);
+    }
+    console.log(product);
+    if (!(userId === product.owner._id.toString())) {
+      throw new NotAcceptableException(
+        `Unauthorized #${userId}!=${product.owner._id}`,
+      );
+    }
+    const productUpdated = await this.productModel
+      .findByIdAndUpdate(
+        id,
+        { $set: { ...payload, owner: userId } },
+        { new: true },
+      )
       .exec();
 
-    if (!product || !userId == product.toJSON().owner._id) {
-      throw new NotAcceptableException(`Unauthorized`);
-    }
-
-    await product.save();
-    return product;
+    await productUpdated.save();
+    return productUpdated;
   }
 
   async remove(id: string, userId: string) {
     const product = await this.findOne(id);
-    if (!product || !userId == product.toJSON().owner._id) {
+    if (!product || !(userId == product.owner._id.toString())) {
       throw new NotAcceptableException(`Unauthorized`);
     }
     return await this.productModel.findByIdAndDelete(id);

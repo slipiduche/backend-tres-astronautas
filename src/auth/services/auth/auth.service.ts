@@ -26,7 +26,7 @@ export class AuthService {
     return null;
   }
   async generateJwt(user: User) {
-    const payload: PayloadToken = { role: 'owner', sub: user._id };
+    const payload: PayloadToken = { role: 'owner', sub: user._id.toString() };
     return { access_token: this.jwtService.sign(payload), user };
   }
 }
