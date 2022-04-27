@@ -4,7 +4,8 @@ import {
   NotAcceptableException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types,FilterQuery  } from 'mongoose';
+import { filter } from 'rxjs';
 import { Product } from 'src/products/entities/product.entity';
 import { UpdateProductDto, CreateProductDto } from '../dtos/products.dto';
 
@@ -21,7 +22,8 @@ export class ProductsService {
     }));
   }
   async findAllByUser(id: string) {
-    const allByUser = await this.productModel.find().populate('owner').exec();
+    
+    const allByUser = await this.productModel.find({owner:id}).populate('owner').exec();
     if (!allByUser) {
       throw new NotAcceptableException('Not valid');
     }
